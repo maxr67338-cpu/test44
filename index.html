@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vibe Time FM</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
+    }
+
+    body{
+      background:#0a0a0a;
+      color:white;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:30px;
+      background-image: linear-gradient(180deg,#0a0a0a,#111,#0a0a0a);
+    }
+
+    .container{
+      width:100%;
+      max-width:900px;
+      background:#111;
+      border:2px solid #00eaff;
+      border-radius:25px;
+      padding:30px;
+      box-shadow:0 0 40px #00eaff55;
+    }
+
+    h1{
+      text-align:center;
+      color:#00eaff;
+      margin-bottom:20px;
+      font-size:50px;
+      text-shadow:0 0 15px #00eaff;
+    }
+
+    .player{
+      background:#181818;
+      border-radius:20px;
+      padding:20px;
+      margin-bottom:30px;
+      text-align:center;
+    }
+
+    .live{
+      color:#00ff66;
+      font-size:18px;
+      margin-bottom:15px;
+    }
+
+    audio{
+      width:100%;
+      margin-top:10px;
+    }
+
+    .wishbox{
+      background:#181818;
+      padding:25px;
+      border-radius:20px;
+    }
+
+    .wishbox h2{
+      color:#00eaff;
+      margin-bottom:20px;
+      text-align:center;
+    }
+
+    input, textarea{
+      width:100%;
+      margin-bottom:15px;
+      padding:15px;
+      border:none;
+      border-radius:12px;
+      background:#222;
+      color:white;
+      font-size:16px;
+    }
+
+    textarea{
+      resize:none;
+      height:120px;
+    }
+
+    button{
+      width:100%;
+      padding:15px;
+      border:none;
+      border-radius:12px;
+      background:#00eaff;
+      color:black;
+      font-size:18px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:0.3s;
+    }
+
+    button:hover{
+      background:white;
+      transform:scale(1.02);
+    }
+
+    .footer{
+      text-align:center;
+      margin-top:20px;
+      color:#888;
+      font-size:14px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>Vibe Time FM</h1>
+
+    <div class="player">
+
+      <div class="live">
+        🔴 LIVE STREAM
+      </div>
+
+      <p>Jetzt Vibe Time FM hören</p>
+
+      <audio controls autoplay>
+        <source src="http://uk25freenew.listen2myradio.com:8476/stream" type="audio/mpeg">
+      </audio>
+
+    </div>
+
+    <div class="wishbox">
+
+      <h2>🎵 Große Wunschbox</h2>
+
+      <form id="wishForm">
+
+        <input type="text" id="name" placeholder="Dein Name" required>
+
+        <textarea id="message" placeholder="Gruß + Songwunsch..." required></textarea>
+
+        <button type="submit">
+          Wunsch senden
+        </button>
+
+      </form>
+
+    </div>
+
+    <div class="footer">
+      © 2026 Vibe Time FM
+    </div>
+
+  </div>
+
+  <script>
+
+    const form = document.getElementById("wishForm");
+
+    form.addEventListener("submit", function(e){
+
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const message = document.getElementById("message").value;
+
+      alert(
+        "Wunsch erfolgreich gesendet!\n\n" +
+        "Name: " + name + "\n" +
+        "Nachricht: " + message
+      );
+
+      form.reset();
+
+    });
+
+  </script>
+
+</body>
+</html>
