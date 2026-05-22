@@ -17,31 +17,17 @@
       border:2px solid #00eaff; border-radius:25px; padding:35px;
       box-shadow:0 0 50px #00eaff55;
     }
-    h1{ 
-      text-align:center; color:#00eaff; margin-bottom:25px; 
-      font-size:52px; text-shadow:0 0 20px #00eaff; 
-    }
-    .player{ 
-      background:#181818; border-radius:20px; padding:25px; 
-      margin-bottom:30px; text-align:center; 
-    }
+    h1{ text-align:center; color:#00eaff; margin-bottom:25px; font-size:52px; text-shadow:0 0 20px #00eaff; }
+    .player{ background:#181818; border-radius:20px; padding:25px; margin-bottom:30px; text-align:center; }
     .live{ color:#00ff66; font-size:18px; margin-bottom:12px; font-weight:bold; }
     
-    .stream-buttons{
-      display:flex; gap:12px; justify-content:center; margin:20px 0;
-    }
-    .stream-btn{
-      padding:12px 28px; border-radius:50px; font-weight:bold;
-      cursor:pointer; transition:0.3s; border:none;
-    }
-    .main-btn{
-      background:#00eaff; color:#000;
-    }
+    .stream-buttons{ display:flex; gap:12px; justify-content:center; margin:20px 0; }
+    .stream-btn{ padding:12px 28px; border-radius:50px; font-weight:bold; cursor:pointer; border:none; transition:0.3s; }
+    .main-btn{ background:#00eaff; color:#000; }
+    
     .listen-btn{
-      display:inline-block; margin:15px 0;
-      padding:14px 32px; background:#00eaff; color:#000;
-      font-weight:bold; font-size:17px; border-radius:50px;
-      text-decoration:none; transition:0.3s;
+      display:inline-block; margin:15px 0; padding:14px 32px; background:#00eaff; color:#000;
+      font-weight:bold; font-size:17px; border-radius:50px; text-decoration:none;
     }
     .listen-btn:hover{ transform:scale(1.05); background:white; }
 
@@ -53,18 +39,46 @@
     }
     textarea{ resize:none; height:110px; }
     button{
-      width:100%; padding:15px; border:none; border-radius:12px;
+      padding:15px; border:none; border-radius:12px;
       background:#00eaff; color:black; font-size:18px; font-weight:bold;
       cursor:pointer;
     }
     button:hover{ background:white; }
 
     .footer{ text-align:center; margin-top:25px; color:#666; font-size:14px; }
-
     .team-btn-wrap{ text-align:right; margin-bottom:15px; }
     .team-open-btn{
       padding:10px 24px; background:#1a1a1a; color:#00eaff;
       border:2px solid #00eaff44; border-radius:12px; font-size:15px;
+    }
+
+    /* Team Area */
+    .overlay{
+      display:none; position:fixed; inset:0; background:#000000cc;
+      z-index:999; justify-content:center; align-items:center; padding:20px;
+    }
+    .overlay.show{ display:flex; }
+    .modal{
+      background:#111; border:2px solid #00eaff; border-radius:25px; padding:30px;
+      width:100%; max-width:720px; max-height:90vh; overflow-y:auto;
+      box-shadow:0 0 40px #00eaff55; position:relative;
+    }
+    .close-btn{
+      position:absolute; top:16px; right:20px; background:transparent;
+      color:#888; font-size:22px; cursor:pointer;
+    }
+    .pw-error{ color:#ff4466; text-align:center; margin:10px 0; display:none; }
+    .modal-tabs{ display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+    .modal-tab{
+      flex:1; padding:10px; border-radius:10px; border:1.5px solid #00eaff33;
+      background:#1a1a1a; color:#888; cursor:pointer;
+    }
+    .modal-tab.active{ background:#00eaff; color:#000; }
+    .modal-panel{ display:none; }
+    .modal-panel.active{ display:block; }
+    .profile-card{
+      background:#1c1c1c; border:1px solid #2a2a2a; border-radius:14px;
+      padding:16px; margin-bottom:12px;
     }
   </style>
 </head>
@@ -82,9 +96,10 @@
     <p>Jetzt Vibe Time FM hören</p>
     
     <div class="stream-buttons">
-      <button class="stream-btn main-btn">🎵 Mainstream</button>
+      <button class="stream-btn main-btn" onclick="playMain()">🎵 Mainstream</button>
+      <button class="stream-btn" onclick="playTest()">🧪 Teststream</button>
     </div>
-
+    
     <a href="https://laut.fm/vibetime" target="_blank" class="listen-btn">
       ▶️ Jetzt live hören
     </a>
@@ -98,19 +113,180 @@
       <button type="submit">Wunsch senden</button>
     </form>
   </div>
-
   <div class="footer">© 2026 Vibe Time FM</div>
 </div>
 
-<!-- Team Overlay (wie vorher) -->
+<!-- TEAM OVERLAY -->
 <div class="overlay" id="overlay" onclick="overlayClick(event)">
   <div class="modal">
     <button class="close-btn" onclick="closeTeamArea()">✕</button>
-    <!-- Login + Dashboard hier einfügen (kann ich bei Bedarf erweitern) -->
+
+    <div id="loginView">
+      <h2>🔐 Team-Login</h2>
+      <p style="text-align:center;color:#888;margin-bottom:18px;">Nur für autorisierte Teammitglieder</p>
+      <div class="pw-error" id="pwError">Falsches Passwort oder Name.</div>
+      <input type="text" id="loginName" placeholder="Name (z.B. Marco)" style="margin-bottom:10px;">
+      <input type="password" id="teamPw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">Einloggen</button>
+    </div>
+
+    <div id="dashView" style="display:none;">
+      <h2>📋 Team-Bereich <span id="currentUser" style="color:#00ff88;"></span></h2>
+      <div class="modal-tabs">
+        <div class="modal-tab active" onclick="switchTab(0)">🎵 Wünsche</div>
+        <div class="modal-tab" onclick="switchTab(1)">👥 Team-Profile</div>
+      </div>
+
+      <div id="panelWishes" class="modal-panel active">
+        <div id="wishList">Noch keine Wünsche eingegangen.</div>
+      </div>
+
+      <div id="panelProfiles" class="modal-panel">
+        <div id="profilesList"></div>
+        <button onclick="addNewProfile()" style="margin-top:15px;">+ Neues Teammitglied erstellen</button>
+      </div>
+
+      <button style="background:#333;color:#888;margin-top:20px;width:100%;" onclick="doLogout()">Ausloggen</button>
+    </div>
   </div>
 </div>
 
 <script>
+  const ADMIN_PASS = 'vibetimefm8000';
+  let currentUser = null;
+  let wishes = JSON.parse(localStorage.getItem('vtfm_wishes') || '[]');
+  let profiles = JSON.parse(localStorage.getItem('vtfm_profiles') || '[]');
+
+  // Marco als Admin
+  if (!profiles.some(p => p.name === "Marco")) {
+    profiles.unshift({
+      id: 1,
+      name: "Marco",
+      role: "Gründer / Hauptmoderator",
+      joined: "Mai 2026",
+      bio: "Gründer von Vibe Time FM",
+      password: ADMIN_PASS,
+      isAdmin: true
+    });
+    localStorage.setItem('vtfm_profiles', JSON.stringify(profiles));
+  }
+
+  function saveData() {
+    localStorage.setItem('vtfm_wishes', JSON.stringify(wishes));
+    localStorage.setItem('vtfm_profiles', JSON.stringify(profiles));
+  }
+
+  function doLogin() {
+    const name = document.getElementById('loginName').value.trim();
+    const pw = document.getElementById('teamPw').value;
+    const user = profiles.find(p => p.name.toLowerCase() === name.toLowerCase() && p.password === pw);
+    
+    if (user) {
+      currentUser = user;
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashView').style.display = 'block';
+      document.getElementById('currentUser').textContent = `— ${user.name}`;
+      renderProfiles();
+    } else {
+      document.getElementById('pwError').style.display = 'block';
+    }
+  }
+
+  function doLogout() {
+    currentUser = null;
+    document.getElementById('dashView').style.display = 'none';
+    document.getElementById('loginView').style.display = 'block';
+    document.getElementById('loginName').value = '';
+    document.getElementById('teamPw').value = '';
+  }
+
+  function addNewProfile() {
+    if (!currentUser?.isAdmin) {
+      alert("Nur Marco (Admin) darf neue Profile erstellen.");
+      return;
+    }
+    const name = prompt("Name des neuen Teammitglieds:");
+    if (!name) return;
+
+    const tempPw = 'vtfm' + Math.floor(1000 + Math.random() * 9000);
+
+    profiles.push({
+      id: Date.now(),
+      name: name,
+      role: "Azubi / Teammitglied",
+      joined: new Date().toLocaleDateString('de-DE'),
+      bio: "",
+      password: tempPw,
+      isAdmin: false
+    });
+
+    saveData();
+    renderProfiles();
+    alert(`✅ Profil für ${name} erstellt!\n\nTemporäres Passwort: ${tempPw}\n\nKopiere es und sende es weiter.`);
+  }
+
+  function renderProfiles() {
+    const list = document.getElementById('profilesList');
+    list.innerHTML = profiles.map(p => `
+      <div class="profile-card">
+        <strong>${p.name} ${p.isAdmin ? '(Admin)' : ''}</strong><br>
+        <small>Rolle: ${p.role}</small><br>
+        <small>Passwort: ${currentUser.isAdmin ? p.password : '••••••••'}</small><br>
+        <small>Bio: ${p.bio || '-'}</small>
+        ${(currentUser.isAdmin || currentUser.name === p.name) ? 
+          `<button onclick="editProfile(${p.id})" style="margin-top:8px;">Bearbeiten</button>` : ''}
+        ${currentUser.isAdmin ? `<button onclick="deleteProfile(${p.id})" style="margin-left:8px;color:#ff4466;">Löschen</button>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function editProfile(id) {
+    const p = profiles.find(x => x.id === id);
+    if (!p) return;
+    if (!currentUser.isAdmin && currentUser.name !== p.name) {
+      alert("Du kannst nur dein eigenes Profil bearbeiten.");
+      return;
+    }
+    const role = prompt("Neue Rolle:", p.role);
+    if (role) p.role = role;
+    const bio = prompt("Bio / Beschreibung:", p.bio);
+    if (bio !== null) p.bio = bio;
+    saveData();
+    renderProfiles();
+  }
+
+  function deleteProfile(id) {
+    if (!currentUser.isAdmin) return;
+    if (!confirm("Profil wirklich löschen?")) return;
+    profiles = profiles.filter(p => p.id !== id);
+    saveData();
+    renderProfiles();
+  }
+
+  function openTeamArea(){
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('loginView').style.display = 'block';
+    document.getElementById('dashView').style.display = 'none';
+  }
+
+  function overlayClick(e){ if(e.target.id === 'overlay') closeTeamArea(); }
+  function closeTeamArea(){ document.getElementById('overlay').classList.remove('show'); }
+
+  function switchTab(n) {
+    document.querySelectorAll('.modal-tab').forEach((t,i) => t.classList.toggle('active', i===n));
+    document.querySelectorAll('.modal-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  }
+
+  // Streams
+  function playMain() {
+    alert("Mainstream wird abgespielt → https://stream.laut.fm/vibetime");
+    window.open("https://laut.fm/vibetime", "_blank");
+  }
+  function playTest() {
+    alert("Teststream wird abgespielt");
+    // Hier kannst du später den Teststream-Link eintragen
+  }
+
   // Wunschbox
   document.getElementById('wishForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -118,18 +294,7 @@
     this.reset();
   });
 
-  // Team-Bereich (vorläufig)
-  function openTeamArea(){
-    alert("Team-Login wird vorbereitet. Aktuelles Passwort: vibetimefm8000");
-    // Hier später volles Login einfügen
-  }
-  function overlayClick(e){ 
-    if(e.target.id === 'overlay') closeTeamArea(); 
-  }
-  function closeTeamArea(){
-    document.getElementById('overlay').classList.remove('show');
-  }
+  saveData();
 </script>
-
 </body>
 </html>
