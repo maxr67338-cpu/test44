@@ -50,23 +50,23 @@
   .date { margin-top: 1vmin; font-size: clamp(1rem, 2.6vw, 2.6rem); opacity: .75; }
 
   /* Bedienleiste */
-  #bar { position: fixed; z-index: 3; right: 18px; bottom: 18px; display: flex; gap: 10px; transition: opacity .4s; }
+  #bar { position: fixed; z-index: 3; right: clamp(8px, 1.2vw, 18px); bottom: clamp(8px, 1.2vh, 18px); display: flex; gap: clamp(4px, .45vw, 8px); transition: opacity .4s; }
   body.idle:not(.panel-open) #bar { opacity: 0; pointer-events: none; }
   button, select, input[type=text], input[type=number] { font: inherit; }
   .btn {
     color: var(--text); background: rgba(255,255,255,.14);
     border: 2px solid rgba(255,255,255,.35); border-radius: 999px;
-    padding: .55em 1.1em; cursor: pointer; font-size: 1rem;
+    padding: .38em .75em; cursor: pointer; font-size: clamp(.68rem, .8vw, .88rem);
   }
   .btn:hover { background: rgba(255,255,255,.26); }
   .btn:focus-visible, #panel input:focus-visible, #panel select:focus-visible { outline: 3px solid var(--c1); outline-offset: 2px; }
 
   #panel {
-    position: fixed; z-index: 3; right: 18px; bottom: 76px; width: min(320px, calc(100vw - 36px));
-    max-height: calc(100vh - 100px); overflow-y: auto;
+    position: fixed; z-index: 3; right: 18px; bottom: 76px; width: min(280px, calc(100vw - 20px));
+    max-height: calc(100dvh - 70px); overflow-y: auto;
     background: rgba(15, 6, 35, .88); color: #fff7ea; backdrop-filter: blur(8px);
-    border: 2px solid rgba(255,255,255,.25); border-radius: 18px; padding: 16px;
-    display: flex; flex-direction: column; gap: 12px; font-size: .95rem;
+    border: 2px solid rgba(255,255,255,.25); border-radius: 18px; padding: clamp(8px, .8vw, 13px);
+    display: flex; flex-direction: column; gap: 8px; font-size: clamp(.72rem, .8vw, .88rem);
   }
   #panel[hidden] { display: none; }
   #panel label { display: flex; flex-direction: column; gap: 4px; }
@@ -171,23 +171,42 @@
   #banner.h { left: 0; right: 0; top: 0; font-size: clamp(1rem, 2.2vw, 1.6rem); padding: .6em 1em; }
 
   #cmdwrap { position: fixed; z-index: 7; right: 18px; left: auto; bottom: 18px; transform: none; display: flex; align-items: center; gap: 8px;
-    width: min(520px, 92vw); padding: .5em .8em; background: rgba(0,0,0,.88); border: 2px solid var(--c1); border-radius: 12px;
-    color: #fff; font-family: ui-monospace, Consolas, monospace; font-size: 1.15rem; }
+    width: min(360px, 84vw); padding: .35em .55em; background: rgba(0,0,0,.88); border: 2px solid var(--c1); border-radius: 12px;
+    color: #fff; font-family: ui-monospace, Consolas, monospace; font-size: clamp(.75rem, .9vw, .95rem); }
   #cmdwrap input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: #fff; font: inherit; }
 
-  #cmdlist { position: fixed; z-index: 6; right: 14px; bottom: 76px; top: auto; width: min(290px, 92vw); max-height: 52vh; overflow: auto;
+  #cmdlist { position: fixed; z-index: 6; right: 14px; bottom: 76px; top: auto; width: min(250px, 84vw); max-height: 42dvh; overflow: auto;
     background: rgba(15,6,35,.82); color: #fff7ea; border: 2px solid rgba(255,255,255,.25); border-radius: 14px; padding: 10px 12px; }
-  #cmdlist h2 { font-size: 1rem; margin-bottom: 4px; }
-  #cmdlist p { opacity: .7; margin-bottom: 8px; line-height: 1.35; font-size: .75rem; }
-  #cmdlist .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 5px; margin-bottom: 8px; }
-  #cmdlist .grid .btn { font-family: ui-monospace, Consolas, monospace; font-size: .75rem; padding: .35em .4em; border-radius: 8px; }
+  #cmdlist h2 { font-size: .85rem; margin-bottom: 4px; }
+  #cmdlist p { opacity: .7; margin-bottom: 8px; line-height: 1.35; font-size: .68rem; }
+  #cmdlist .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 4px; margin-bottom: 6px; }
+  #cmdlist .grid .btn { font-family: ui-monospace, Consolas, monospace; font-size: .65rem; padding: .28em .32em; border-radius: 6px; }
   #cmdlist .row { display: flex; gap: 6px; flex-wrap: wrap; }
-  #cmdlist .row .btn { flex: 1; font-size: .8rem; padding: .4em .6em; }
+  #cmdlist .row .btn { flex: 1; font-size: .68rem; padding: .3em .45em; }
 
   #kick { position: fixed; inset: 0; z-index: 7; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; }
   #kick .box { background: #393b3d; color: #fff; border-radius: 12px; padding: 28px 32px; width: min(460px, 90vw); text-align: center; display: flex; flex-direction: column; gap: 14px; }
   #kick h2 { font-size: 1.4rem; }
   #kick p { opacity: .85; line-height: 1.4; }
+
+
+  /* Responsive: kleine Buttons und sichere Abstände auf Fernsehern */
+  main { max-width: 100vw; max-height: 100dvh; padding: clamp(8px, 2vmin, 22px); }
+  h1 { font-size: clamp(2rem, min(10vw, 13vh), 9rem); }
+  .time { font-size: clamp(2rem, min(8vw, 12vh), 8rem); }
+  .date { font-size: clamp(.8rem, min(2vw, 3vh), 1.8rem); }
+  #bar { max-width: calc(100vw - 16px); flex-wrap: wrap; justify-content: flex-end; }
+  #panel { right: clamp(8px, 1.2vw, 18px); bottom: clamp(52px, 7vh, 76px); }
+  #cmdwrap { right: clamp(8px, 1.2vw, 18px); bottom: clamp(8px, 1.2vh, 18px); }
+  #cmdlist { right: clamp(8px, 1.2vw, 18px); bottom: clamp(52px, 7vh, 76px); }
+  #log { left: clamp(8px, 1.2vw, 16px); bottom: clamp(8px, 1.2vh, 16px); max-width: 45vw; font-size: clamp(.65rem, .75vw, .85rem); }
+  @media (max-width: 700px), (max-height: 500px) {
+    #bar { gap: 4px; }
+    .btn { font-size: .68rem; padding: .3em .55em; border-width: 1px; }
+    #cmdwrap { width: min(300px, 78vw); }
+    #cmdlist { width: min(220px, 78vw); max-height: 38dvh; padding: 7px; }
+    #panel { width: min(260px, calc(100vw - 16px)); padding: 9px; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     h1 .ch, #age { animation: none; }
