@@ -287,10 +287,36 @@
   <label class="chk"><input type="checkbox" id="inH12"> 12-Stunden-Format</label>
   <label class="chk"><input type="checkbox" id="inWake"> Bildschirm wach halten</label>
   <div class="row">
-    <button class="btn" type="button" id="btnMusic">Musik an</button>
+    <button class="btn" type="button" id="btnMusic">Ding-Ding-Musik an</button>
     <button class="btn" type="button" id="btnBurst">Konfetti-Knall</button>
   </div>
-  <small>Tasten: F Vollbild, S Einstellungen, Leertaste Konfetti, M Musik. Doppelklick wechselt den Vollbild.</small>
+  <label for="volumeSlider">Lautstärke: <span id="volumeValue">35%</span>
+    <input id="volumeSlider" type="range" min="0" max="100" value="35" step="1">
+  </label>
+  <strong>Online-Musik (für deinen Fernseher)</strong>
+  <div class="row">
+    <button class="btn" type="button" id="onlinePartyBtn">▶ Pop / Party Radio</button>
+    <button class="btn" type="button" id="onlineChillBtn">▶ Chill Radio</button>
+  </div>
+  <div class="row">
+    <button class="btn" type="button" id="onlineStopBtn">■ Online-Musik stoppen</button>
+  </div>
+  <small id="onlineStatus">Wähle ein Online-Radio. Beim ersten Start kann es ein paar Sekunden dauern.</small>
+  <audio id="onlineAudio" preload="none"></audio>
+  <hr style="border:0;border-top:1px solid rgba(255,255,255,.22);margin:3px 0">
+  <label>Eigene Musikdateien (nur falls dein Gerät Dateien auswählen kann)
+    <input id="musicFiles" type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a" multiple>
+  </label>
+  <label>Musiktitel
+    <select id="trackSelect" disabled><option value="">Erst Musikdateien auswählen</option></select>
+  </label>
+  <div class="row">
+    <button class="btn" type="button" id="realMusicBtn" disabled>▶ Eigene Musik abspielen</button>
+    <button class="btn" type="button" id="nextTrackBtn" disabled>Nächster Titel</button>
+  </div>
+  <audio id="realAudio" preload="metadata"></audio>
+  <small>Die Ding-Ding-Melodie bleibt erhalten. Online-Radios brauchen eine Internetverbindung; die Lautstärke oben regelt alle Musikquellen.</small>
+  <small>Tasten: F Vollbild, S Einstellungen, Leertaste Konfetti, M Ding-Ding-Musik. Doppelklick wechselt den Vollbild.</small>
 </aside>
 
 <div id="bar">
@@ -395,7 +421,9 @@
   });
 
   /* ---------- Musik (Happy-Birthday-Melodie per WebAudio) ---------- */
-  var actx = null, master = null, musicOn = false, musicTimer = null;
+  var actx = null, master = null, musicOn = false, musicTimer = null, musicVolume = 0.35;
+  var realAudio = $('realAudio'), onlineAudio = $('onlineAudio'), musicFiles = [], currentTrack = -1, objectUrls = [];
+  var onlineStations = { party: 'https://ice1.somafm.com/poptron-128-mp3', chill: 'https://ice1.somafm.com/groovesalad-128-mp3' };
   var tune = [
     [392,.75],[392,.25],[440,1],[392,1],[523,1],[494,2],
     [392,.75],[392,.25],[440,1],[392,1],[587,1],[523,2],
@@ -404,7 +432,7 @@
   ];
   function playTune() {
     var t = actx.currentTime + 0.05, beat = 0.55;
-    master = actx.createGain(); master.gain.value = 0.22; master.connect(actx.destination);
+    master = actx.createGain(); master.gain.value = musicVolume * 0.65; master.connect(actx.destination);
     tune.forEach(function (nt) {
       var o = actx.createOscillator(), g = actx.createGain(), dur = nt[1] * beat;
       o.type = 'triangle'; o.frequency.value = nt[0];
@@ -419,7 +447,7 @@
   function setMusic(on) {
     if (on === musicOn) return;
     musicOn = on;
-    $('btnMusic').textContent = on ? 'Musik aus' : 'Musik an';
+    $('btnMusic').textContent = on ? 'Ding-Ding-Musik aus' : 'Ding-Ding-Musik an';
     if (on) {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) { musicOn = false; return; }
@@ -542,12 +570,76 @@
         if (pair[1] === 'wake') applyWake();
       });
     });
-  $('btnMusic').addEventListener('click', function () { setMusic(!musicOn); });
+  $('btnMusic').addEventListener('click', function () { if (!musicOn) { stopOnlineMusic(); realAudio.pause(); } setMusic(!musicOn); });
   $('btnBurst').addEventListener('click', function () { bigBurst(innerWidth / 2, innerHeight / 2); });
+
+  // Lautstärke und echte Musikdateien (lokale Dateien, keine externen Streams nötig)
+  $('volumeSlider').addEventListener('input', function (e) {
+    musicVolume = Number(e.target.value) / 100;
+    $('volumeValue').textContent = e.target.value + '%';
+    if (master && actx) master.gain.setTargetAtTime(musicVolume * 0.65, actx.currentTime, 0.04);
+    realAudio.volume = musicVolume;
+    onlineAudio.volume = musicVolume;
+  });
+  realAudio.volume = musicVolume;
+  onlineAudio.volume = musicVolume;
+  function stopOnlineMusic() {
+    onlineAudio.pause(); onlineAudio.removeAttribute('src'); onlineAudio.load();
+    $('onlineStatus').textContent = 'Online-Musik gestoppt.';
+    $('onlinePartyBtn').textContent = '▶ Pop / Party Radio';
+    $('onlineChillBtn').textContent = '▶ Chill Radio';
+  }
+  function playOnlineMusic(kind) {
+    setMusic(false); realAudio.pause();
+    onlineAudio.src = onlineStations[kind]; onlineAudio.volume = musicVolume;
+    $('onlineStatus').textContent = 'Verbinde mit ' + (kind === 'party' ? 'Pop / Party Radio' : 'Chill Radio') + ' …';
+    onlineAudio.play().then(function () {
+      $('onlineStatus').textContent = 'Läuft: ' + (kind === 'party' ? 'Pop / Party Radio' : 'Chill Radio');
+      $('onlinePartyBtn').textContent = kind === 'party' ? '❚❚ Pop / Party Radio' : '▶ Pop / Party Radio';
+      $('onlineChillBtn').textContent = kind === 'chill' ? '❚❚ Chill Radio' : '▶ Chill Radio';
+    }).catch(function () {
+      $('onlineStatus').textContent = 'Konnte nicht starten. Prüfe Internet oder wähle den Sender erneut.';
+    });
+  }
+  $('onlinePartyBtn').addEventListener('click', function () { if (!onlineAudio.paused && onlineAudio.src.indexOf('poptron') !== -1) { stopOnlineMusic(); } else { playOnlineMusic('party'); } });
+  $('onlineChillBtn').addEventListener('click', function () { if (!onlineAudio.paused && onlineAudio.src.indexOf('groovesalad') !== -1) { stopOnlineMusic(); } else { playOnlineMusic('chill'); } });
+  $('onlineStopBtn').addEventListener('click', stopOnlineMusic);
+  $('musicFiles').addEventListener('change', function (e) {
+    objectUrls.forEach(function (u) { URL.revokeObjectURL(u); });
+    objectUrls = []; musicFiles = Array.from(e.target.files || []); currentTrack = -1;
+    var select = $('trackSelect'); select.innerHTML = '';
+    musicFiles.forEach(function (file, i) {
+      var url = URL.createObjectURL(file); objectUrls.push(url);
+      var opt = document.createElement('option'); opt.value = String(i); opt.textContent = file.name; select.appendChild(opt);
+    });
+    var has = musicFiles.length > 0;
+    select.disabled = !has; $('realMusicBtn').disabled = !has; $('nextTrackBtn').disabled = musicFiles.length < 2;
+    if (!has) { var empty = document.createElement('option'); empty.textContent = 'Erst Musikdateien auswählen'; select.appendChild(empty); }
+    $('realMusicBtn').textContent = '▶ Echte Musik abspielen';
+  });
+  function playRealTrack(index) {
+    if (!musicFiles.length) return;
+    currentTrack = (index + musicFiles.length) % musicFiles.length;
+    $('trackSelect').value = String(currentTrack);
+    setMusic(false); stopOnlineMusic(); // jeweils nur eine Musikquelle gleichzeitig
+    realAudio.src = objectUrls[currentTrack]; realAudio.volume = musicVolume;
+    realAudio.play().then(function () { $('realMusicBtn').textContent = '❚❚ Echte Musik pausieren'; }).catch(function () {
+      $('realMusicBtn').textContent = '▶ Erneut abspielen';
+    });
+  }
+  $('trackSelect').addEventListener('change', function (e) { if (e.target.value !== '') playRealTrack(Number(e.target.value)); });
+  $('realMusicBtn').addEventListener('click', function () {
+    if (!musicFiles.length) return;
+    if (!realAudio.paused) { realAudio.pause(); $('realMusicBtn').textContent = '▶ Echte Musik weiter'; }
+    else if (realAudio.src && currentTrack >= 0) { realAudio.play().then(function () { $('realMusicBtn').textContent = '❚❚ Echte Musik pausieren'; }).catch(function () {}); }
+    else playRealTrack(Number($('trackSelect').value || 0));
+  });
+  $('nextTrackBtn').addEventListener('click', function () { playRealTrack(currentTrack + 1); });
+  realAudio.addEventListener('ended', function () { if (musicFiles.length > 1) playRealTrack(currentTrack + 1); else $('realMusicBtn').textContent = '▶ Erneut abspielen'; });
 
   // Klick auf den Bildschirm: Konfetti-Knall an der Stelle
   document.addEventListener('click', function (e) {
-    if (e.target.closest('#panel, #bar, #cmdwrap, #cmdlist, #kick')) return;
+    if (e.target.closest('#panel, #bar, #cmdwrap, #cmdlist, #kick, #realAudio')) return;
     if (panel.hidden === false) { togglePanel(false); return; }
     bigBurst(e.clientX, e.clientY);
   });
