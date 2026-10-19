@@ -10,16 +10,22 @@
     --c0: #ff5d8f; --c1: #ffc145; --c2: #4de2c5; --c3: #6ea8ff; --c4: #c77dff;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; }
+  html { width: 100%; height: 100%; min-width: 100%; min-height: 100%; overflow: hidden; background: var(--bg2); }
   body {
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh; height: 100dvh;
+    overflow: hidden;
     background: radial-gradient(ellipse at 50% 40%, var(--bg1), var(--bg2) 75%);
+    background-size: 100% 100%;
     color: var(--text);
     font-family: "Arial Rounded MT Bold", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
     display: flex; align-items: center; justify-content: center;
     transition: background .6s;
   }
   body.idle { cursor: none; }
-  canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  body::before { content: ""; position: fixed; z-index: 0; inset: -3px; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 40%, var(--bg1), var(--bg2) 75%); }
+  canvas { position: fixed; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); pointer-events: none; }
 
   main { position: relative; z-index: 1; text-align: center; padding: 2vmin; }
   h1 { font-size: clamp(2.2rem, 11vw, 14rem); line-height: 1.02; font-weight: 900; letter-spacing: .02em; }
